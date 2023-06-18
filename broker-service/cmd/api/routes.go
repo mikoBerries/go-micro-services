@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/cors"
 )
 
-func (app *config) routes() http.Handler {
+func (app *Config) routes() http.Handler {
 	mux := chi.NewRouter()
 	// add middleware before routing to specific microservices
 	mux.Use(cors.Handler(cors.Options{
@@ -27,5 +27,6 @@ func (app *config) routes() http.Handler {
 	// prebuild middle ware to check / ping services
 	mux.Use(middleware.Heartbeat("/ping"))
 
-	return nil
+	mux.Post("/", app.Broker)
+	return mux
 }
