@@ -26,39 +26,65 @@ type Config struct {
 }
 
 func main() {
+	log.Println("Starting sleep ")
+	time.Sleep(15 * time.Second)
+
+	log.Println("Starting logger services")
 	mongoClient, err := connectToMongo()
 	if err != nil {
 		log.Panic(err)
 	}
-	client = mongoClient
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	log.Println("Connected to mongo !")
+	client = mongoClient
+	log.Println("1")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	log.Println("2")
+
 	defer cancel()
 	// closing connection
 	defer func() {
 		if err = client.Disconnect(ctx); err != nil {
-			panic(err)
+			log.Panic(err)
+		} else {
+			log.Println("exit")
 		}
 	}()
+	log.Println("3")
 
 	app := Config{
 		Models: data.New(client),
 	}
+	// app.serve()
+	log.Println("4")
 
-	app.serve()
-
-}
-
-func (app *Config) serve() {
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", webPort),
 		Handler: app.routes(),
 	}
-	err := srv.ListenAndServe()
+
+	log.Println("5")
+
+	log.Printf("logger service server at port :%s \n", webPort)
+
+	log.Println("6")
+	err = srv.ListenAndServe()
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 }
+
+// func (app *Config) serve() {
+// 	srv := &http.Server{
+// 		Addr:    fmt.Sprintf(":%s", webPort),
+// 		Handler: app.routes(),
+// 	}
+// 	err := srv.ListenAndServe()
+// 	if err != nil {
+// 		log.Println(err)
+// 	}
+// }
 
 func connectToMongo() (*mongo.Client, error) {
 	// Create connection options

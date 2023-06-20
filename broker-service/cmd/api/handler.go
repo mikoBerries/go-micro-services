@@ -46,14 +46,15 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		app.errorJSON(w, err)
 		return
 	}
-
+	log.Printf("incoming  request : %+v \n", requestPayload)
 	// Switch action which service will used
 	switch requestPayload.Action {
 	case "auth":
 		// do forwarding reqeust to auth services
-		log.Printf("incoming auth request : %+v \n", requestPayload)
+		log.Printf("incoming auth request : %+v \n", requestPayload.Auth)
 		app.authenticate(w, requestPayload.Auth)
 	case "log":
+		log.Printf("incoming auth request : %+v \n", requestPayload.Log)
 		app.logItem(w, requestPayload.Log)
 	default:
 		app.errorJSON(w, errors.New("unkown action"))
@@ -61,7 +62,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// authenticate forwading and recording/manipulating response from authentication-services
+// logItem for logger services
 func (app *Config) logItem(w http.ResponseWriter, payload LogPayload) {
 	// create json data to logger services
 	jsonData, _ := json.MarshalIndent(payload, "", "\t")

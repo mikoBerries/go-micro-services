@@ -1,7 +1,7 @@
 FRONT_END_BINARY=frontApp.exe
 BROKER_BINARY=brokerApp
 AUTH_BINARY=authApp
-BROKER_BINARY=loggerServiceApp
+LOGGER_BINARY=loggerServiceApp
 
 ## up: starts all containers in the background without forcing build
 up:
@@ -10,7 +10,7 @@ up:
 	@echo Docker images started!
 
 ## up_build: stops docker-compose (if running), builds all projects and starts docker compose
-up_build: build_broker build_auth
+up_build: build_broker build_auth build_logger
 	@echo Stopping docker images if running...
 	docker-compose down
 	@echo Building when required and starting docker images...
@@ -58,10 +58,14 @@ stop:
 	@taskkill /IM "${FRONT_END_BINARY}" /F
 	@echo "Stopped front end!"
 
-##start_front starting front-end
-start_front:
+##front starting front-end
+front:
 	cd ./front-end/cmd/web && go run *
 
 ## docker_rm_stage rm image used for bulder stages
 docker-rm-stage:
 	docker image prune --filter label=stage=builder
+
+## log using mongosh
+mongosh:
+	mongosh mongodb://192.168.99.100:27017/logs --username admin --authenticationDatabase admin 

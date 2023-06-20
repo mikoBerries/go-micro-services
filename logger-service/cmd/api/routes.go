@@ -22,7 +22,6 @@ func (app *Config) routes() http.Handler {
 	// prebuild middle ware to check / ping services
 	mux.Use(middleware.Heartbeat("/ping"))
 
-	// mux.Post("/", app.Broker)
-	// mux.Post("/handle", app.HandleSubmission)
+	mux.Post("/log", app.WriteLog)
 	return mux
 }

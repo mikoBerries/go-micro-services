@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -31,7 +33,13 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 		app.errorJSON(w, errors.New("invalid credentials"), http.StatusBadRequest)
 		return
 	}
-
+	// Add some logger data to logger service to this user data
+	// err = app.logItems("authentication", fmt.Sprintf("%s are logged in", user.Email))
+	// if err != nil {
+	// 	app.errorJSON(w, err)
+	// 	return
+	// }
+	// write response
 	payload := jsonResponse{
 		Error:   false,
 		Message: fmt.Sprintf("Logged in user %s", user.Email),
@@ -39,4 +47,37 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.writeJSON(w, http.StatusAccepted, payload)
+}
+
+func (app *Config) logItems(name string, data string) error {
+	var entry struct {
+		Name string `json:"name"`
+		Data string `json:"data"`
+	}
+	entry.Name = name
+	entry.Data = data
+
+	// create json data to logger services
+	jsonData, _ := json.MarshalIndent(entry, "", "\t")
+
+	// url inside container network
+	loggerServiceUrl := "http://logger-service/log"
+
+	// Build a new Request
+	request, err := http.NewRequest("POST", loggerServiceUrl, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Context-Type", "application/json")
+
+	// make client and execute request
+	client := &http.Client{}
+
+	_, err = client.Do(request)
+	if err != nil {
+		return err
+	}
+	// defer response.Body.Close()
+
+	return nil
 }
