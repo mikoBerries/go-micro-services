@@ -14,6 +14,17 @@ services:
     #   mode: relicated
     #   replicas: 1
   
+  logger-services:
+    build:
+      context: ./logger-service
+      dockerfile: logger-service.dockerfile
+    # restart: always
+    # ports:
+    #   - "8080:80"
+    # deploy:
+    #   mode: relicated
+    #   replicas: 1
+  
   authentication-service:
     build: 
       context: ./authentication-service
@@ -45,6 +56,18 @@ services:
     #   - ./db-data/postgres/:/var/lib/postgresql/data/
     volumes:
        - data:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:4.2-bionic
+    ports:
+      - "27017:27017"
+    # restart: always
+    environment:
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - data:/mongodb/data/db
 
 volumes:
   data:

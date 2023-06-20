@@ -13,7 +13,7 @@ import (
 
 var client *mongo.Client
 
-func new(mongo *mongo.Client) Models {
+func New(mongo *mongo.Client) Models {
 	client = mongo
 	return Models{
 		LogEntry: LogEntry{},
