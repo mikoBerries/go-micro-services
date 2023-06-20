@@ -31,3 +31,6 @@ A Mail service, which takes a JSON payload, converts into a formatted email, and
 All of these services will be written in Go, commonly referred to as Golang, a language which is particularly well suited to building distributed web applications.
 
 We'll also learn how to deploy our distributed application to a Docker Swarm and Kubernetes, and how to scale up and down, as necessary, and to update individual microservices with little or no downtime.
+
+
+* https://www.cyberciti.biz/faq/alpine-linux-install-bash-using-apk-command/
