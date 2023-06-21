@@ -34,11 +34,11 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Add some logger data to logger service to this user data
-	// err = app.logItems("authentication", fmt.Sprintf("%s are logged in", user.Email))
-	// if err != nil {
-	// 	app.errorJSON(w, err)
-	// 	return
-	// }
+	err = app.logItems("authentication", fmt.Sprintf("%s are logged in", user.Email))
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
 	// write response
 	payload := jsonResponse{
 		Error:   false,
@@ -61,7 +61,7 @@ func (app *Config) logItems(name string, data string) error {
 	jsonData, _ := json.MarshalIndent(entry, "", "\t")
 
 	// url inside container network
-	loggerServiceUrl := "http://logger-service/log"
+	loggerServiceUrl := "http://logger-services/log"
 
 	// Build a new Request
 	request, err := http.NewRequest("POST", loggerServiceUrl, bytes.NewBuffer(jsonData))

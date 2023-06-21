@@ -54,7 +54,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		log.Printf("incoming auth request : %+v \n", requestPayload.Auth)
 		app.authenticate(w, requestPayload.Auth)
 	case "log":
-		log.Printf("incoming auth request : %+v \n", requestPayload.Log)
+		log.Printf("incoming log request : %+v \n", requestPayload.Log)
 		app.logItem(w, requestPayload.Log)
 	default:
 		app.errorJSON(w, errors.New("unkown action"))
@@ -68,7 +68,7 @@ func (app *Config) logItem(w http.ResponseWriter, payload LogPayload) {
 	jsonData, _ := json.MarshalIndent(payload, "", "\t")
 
 	// url inside container network
-	loggerServiceUrl := "http://logger-service/log"
+	loggerServiceUrl := "http://logger-services/log"
 
 	// Build a new Request
 	request, err := http.NewRequest("POST", loggerServiceUrl, bytes.NewBuffer(jsonData))
@@ -112,7 +112,7 @@ func (app *Config) authenticate(w http.ResponseWriter, payload AuthPayload) {
 	jsonData, _ := json.MarshalIndent(payload, "", "\t")
 
 	// Build a new Request
-	request, err := http.NewRequest("POST", "http://authentication-service/authenticate", bytes.NewBuffer(jsonData))
+	request, err := http.NewRequest("POST", "http://authentication-services/authenticate", bytes.NewBuffer(jsonData))
 	if err != nil {
 		app.errorJSON(w, err)
 		return

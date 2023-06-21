@@ -62,7 +62,7 @@ func openDB(dsn string) (*sql.DB, error) {
 
 func connecToDB() *sql.DB {
 	var counts int64
-	interval := 2 * time.Second
+	interval := 5 * time.Second
 	dsn := os.Getenv("DSN")
 	for {
 		connection, err := openDB(dsn)

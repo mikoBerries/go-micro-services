@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/MikoBerries/go-micro-services/logger-service/data"
@@ -13,9 +14,9 @@ import (
 )
 
 const (
-	webPort  = "80"
-	rpcPort  = "5001"
-	mongoUrl = "mongodb://mongo:27017"
+	webPort = "80"
+	rpcPort = "5001"
+	// mongoUrl = "mongodb://mongodatabase:27017"
 	gRpcPort = "5001"
 )
 
@@ -37,10 +38,8 @@ func main() {
 
 	log.Println("Connected to mongo !")
 	client = mongoClient
-	log.Println("1")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	log.Println("2")
 
 	defer cancel()
 	// closing connection
@@ -51,42 +50,29 @@ func main() {
 			log.Println("exit")
 		}
 	}()
-	log.Println("3")
 
 	app := Config{
 		Models: data.New(client),
 	}
-	// app.serve()
-	log.Println("4")
+	app.serve()
 
+}
+
+func (app *Config) serve() {
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", webPort),
 		Handler: app.routes(),
 	}
-
-	log.Println("5")
-
 	log.Printf("logger service server at port :%s \n", webPort)
-
-	log.Println("6")
-	err = srv.ListenAndServe()
+	err := srv.ListenAndServe()
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-// func (app *Config) serve() {
-// 	srv := &http.Server{
-// 		Addr:    fmt.Sprintf(":%s", webPort),
-// 		Handler: app.routes(),
-// 	}
-// 	err := srv.ListenAndServe()
-// 	if err != nil {
-// 		log.Println(err)
-// 	}
-// }
-
 func connectToMongo() (*mongo.Client, error) {
+	mongoUrl := os.Getenv("mongoUrl")
+
 	// Create connection options
 	clientOptions := options.Client().ApplyURI(mongoUrl)
 
