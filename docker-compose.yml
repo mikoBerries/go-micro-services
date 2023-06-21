@@ -2,7 +2,7 @@ version: '3'
 
 services:
   
-  broker-services:
+  broker-service:
     build:
       context: ./broker-service
       dockerfile: broker-service.dockerfile
@@ -13,19 +13,19 @@ services:
     #   mode: relicated
     #   replicas: 1
   
-  logger-services:
+  logger-service:
     build:
       context: ./logger-service
       dockerfile: logger-service.dockerfile
-    # ports:
-    #   - "8082:80"
     environment:
       - mongoUrl=mongodb://mongoDB:27017
+    # ports:
+    #   - "8082:80"
     # deploy:
     #   mode: relicated
     #   replicas: 1
   
-  authentication-services:
+  authentication-service:
     build: 
       context: ./authentication-service
       dockerfile: authentication-service.dockerfile
@@ -38,11 +38,26 @@ services:
     #   mode: relicated
     #   replicas: 1
 
+  mailer-service:
+    build:
+      context: ./mail-service
+      dockerfile: mail-service.dockerfile
+    restart: always
+    environment:
+      MAIL_PORT: 1025
+      MAIL_DOMAIN: localhost
+      MAIL_HOST: mailhog
+      MAIL_USERNAME: ""
+      EMAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: none
+      FROM_NAME: "john Doe"
+      FROM_ADDRESS: "jhon.Doe@email.com"
+
   postgres:
     image: postgres:14.0-alpine
     ports:
       - "5432:5432"
-      # restart: always
+    restart: always
       # deploy:
       #   mode: relicated
       #   replicas: 1
@@ -50,10 +65,10 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=users
-    # volumes:
-    #   - ./db-data/postgres/:/var/lib/postgresql/data/
     volumes:
       - data:/var/lib/postgresql/data
+    # volumes:
+    #   - ./db-data/postgres/:/var/lib/postgresql/data/
 
   mongoDB:
     image: mongo:4.2.16-bionic
@@ -64,14 +79,17 @@ services:
       MONGO_INITDB_DATABASE: logs
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
-    # volumes:
-    #   - data:/data/db
-    #   - data:/mongodb/data/db
-# MONGO_INITDB_DATABASE: logs
-      # MONGO_INITDB_ROOT_USERNAME: admin
-      # MONGO_INITDB_ROOT_PASSWORD: secretmongo
-      # environment:
- 
+    volumes:
+      - data:/mongodb/data/db
+
+  
+  # SMTP server :1025
+  # HTTP server for mail/hog :8025
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   data:
