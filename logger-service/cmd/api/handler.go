@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/MikoBerries/go-micro-services/logger-service/data"
@@ -14,7 +13,6 @@ type JSONPayload struct {
 
 // WriteLog Writing new log data to db (Mongo db collection (logs))
 func (app *Config) WriteLog(w http.ResponseWriter, r *http.Request) {
-	log.Println("incoming")
 	// read incoming json
 	var requestPayload JSONPayload
 	_ = app.readJSON(w, r, &requestPayload)

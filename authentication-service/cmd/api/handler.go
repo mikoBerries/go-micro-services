@@ -61,7 +61,7 @@ func (app *Config) logItems(name string, data string) error {
 	jsonData, _ := json.MarshalIndent(entry, "", "\t")
 
 	// url inside container network
-	loggerServiceUrl := "http://logger-services/log"
+	loggerServiceUrl := "http://logger-service/log"
 
 	// Build a new Request
 	request, err := http.NewRequest("POST", loggerServiceUrl, bytes.NewBuffer(jsonData))

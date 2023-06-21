@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 const webPort = "80"
@@ -16,11 +17,12 @@ type Config struct {
 
 func main() {
 	log.Println("Processing mail-services")
-
+	time.Sleep(15 * time.Second)
+	log.Println("Getting all env config")
 	app := Config{
 		Mailer: createMail(),
 	}
-
+	log.Printf("%+v \n", app.Mailer)
 	// make mail service
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", webPort),

@@ -37,9 +37,9 @@ func (app *Config) SendEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Write some response
-	rspPayload := jsonResponse{
+	responsePayload := jsonResponse{
 		Error:   false,
-		Message: fmt.Sprintf("Success -  Email are sended to (%s)",msg.To),
+		Message: fmt.Sprintf("Success -  Email are sended to (%s)", msg.To),
 	}
-	app.writeJSON(w, http.StatusAccepted, rspPayload)
+	app.writeJSON(w, http.StatusAccepted, responsePayload)
 }

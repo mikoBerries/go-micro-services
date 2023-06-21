@@ -63,8 +63,8 @@ func (m *Mail) SendSMTPMessage(msg Message) error {
 	server.Password = m.Password
 	server.Encryption = m.getEncryption(m.Encryption)
 	server.KeepAlive = false
-	server.ConnectTimeout = 10 * time.Second
-	server.SendTimeout = 10 * time.Second
+	server.ConnectTimeout = 30 * time.Second
+	server.SendTimeout = 30 * time.Second
 
 	smtpClient, err := server.Connect()
 	if err != nil {
