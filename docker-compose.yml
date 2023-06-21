@@ -53,6 +53,15 @@ services:
       FROM_NAME: "john Doe"
       FROM_ADDRESS: "jhon.Doe@email.com"
 
+  lsitener-service:
+    build:
+      context: ./listener-service
+      dockerfile: ./listener-service.dockerfile
+    restart: always
+    environment:
+      rabbitMQDial: "amqp://guest:guest@rabbitmq"
+
+
   postgres:
     image: postgres:14.0-alpine
     ports:
@@ -91,6 +100,15 @@ services:
       - "1025:1025"
       - "8025:8025"
 
+  rabbitmq:
+    image: rabbitmq:3.10-management-alpine
+    ports:
+      - "5672:5672"
+    restart: always
+    volumes:
+    - data:/var/lib/rabbitmq/
+
 volumes:
   data:
     external: true
+    
