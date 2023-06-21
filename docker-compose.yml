@@ -6,9 +6,11 @@ services:
     build:
       context: ./broker-service
       dockerfile: broker-service.dockerfile
-    # restart: always
     ports:
       - "8080:80"
+    environment:
+      rabbitMQDial: "amqp://guest:guest@rabbitmq"
+    # restart: always
     # deploy:
     #   mode: relicated
     #   replicas: 1
@@ -53,7 +55,7 @@ services:
       FROM_NAME: "john Doe"
       FROM_ADDRESS: "jhon.Doe@email.com"
 
-  lsitener-service:
+  listener-service:
     build:
       context: ./listener-service
       dockerfile: ./listener-service.dockerfile
@@ -101,12 +103,12 @@ services:
       - "8025:8025"
 
   rabbitmq:
-    image: rabbitmq:3.10-management-alpine
+    image: rabbitmq:3.10.24-alpine
     ports:
       - "5672:5672"
     restart: always
-    volumes:
-    - data:/var/lib/rabbitmq/
+    # volumes:
+    # - data:/var/lib/rabbitmq/
 
 volumes:
   data:

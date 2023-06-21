@@ -36,7 +36,7 @@ func (consumer *Consumer) setup() error {
 	if err != nil {
 		return err
 	}
-	defer channel.Close()
+	// defer channel.Close()
 	// declaring exchange
 	return declareExchange(channel)
 }
@@ -83,8 +83,6 @@ func (consumer *Consumer) Listen(topics []string) error {
 	// loop massage chan forever to listen incoming messages
 	go func() {
 		for message := range messages { //forr channel
-			log.Printf("incoming messages: %+v \n", message)
-
 			var payload Payload // Data insede of rabbitmq
 			_ = json.Unmarshal(message.Body, &payload)
 			// run another go rutine to faster consume so quque are not full
@@ -110,16 +108,12 @@ func handlePayload(payload Payload) {
 	case "":
 
 	default:
-		err := logEvent(payload)
-		if err != nil {
-			log.Println(err)
-		}
+
 	}
 }
 
 // logEvent calling looger-service to save a new log
 func logEvent(payload Payload) error {
-	log.Println("Start sending to logger-service")
 	// create json data to logger services
 	jsonData, _ := json.MarshalIndent(payload, "", "\t")
 
@@ -141,6 +135,5 @@ func logEvent(payload Payload) error {
 		return err
 	}
 
-	log.Println("Done sending to logger-service")
 	return nil
 }
