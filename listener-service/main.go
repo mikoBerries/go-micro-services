@@ -1,20 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
+	"github.com/MikoBerries/go-micro-services/listener-service/event"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
-
-const webPort = "80"
-
-type Config struct {
-	Rabbit *amqp.Connection
-}
 
 func main() {
 	// connecting to rabbit mq
@@ -25,18 +18,18 @@ func main() {
 	}
 	defer rabbitConnection.Close()
 
-	app := Config{
-		Rabbit: rabbitConnection,
-	}
-	// make server
-	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%s", webPort),
-		Handler: app.routes(),
-	}
-	log.Printf("starting broker services at :%s\n", webPort)
-	err = srv.ListenAndServe()
+	// Create new consumer
+	consumer, err := event.NewConsumer(rabbitConnection)
 	if err != nil {
 		log.Panic(err)
+	}
+	// declaring what topics wa want to consume
+	topics := []string{"log.*"}
+
+	// Start consumer to listening to rabbitMQ
+	err = consumer.Listen(topics)
+	if err != nil {
+		log.Println(err)
 	}
 }
 
@@ -45,8 +38,10 @@ func connect() (*amqp.Connection, error) {
 	var counts int64
 	interval := 5 * time.Second
 	var connection *amqp.Connection
+	// dsn := os.Getenv("DSN")
 	for {
 		// try connect to Rabbit MQ (Driver :// Username : Password @ Host)
+		// c, err := amqp.Dial("amqp://guest:guest@rabbitmq")
 		c, err := amqp.Dial(os.Getenv("rabbitMQDial"))
 
 		if err != nil {

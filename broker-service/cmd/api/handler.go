@@ -6,6 +6,8 @@ import (
 	"errors"
 	"log"
 	"net/http"
+
+	"github.com/MikoBerries/go-micro-services/broker-service/event"
 )
 
 // RequestPayload universa request embeded with Specific payload nedeed for each action
@@ -56,17 +58,19 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("incoming  request : %+v \n", requestPayload)
+
 	// Switch action which service will used
 	switch requestPayload.Action {
 	case "auth":
 		// do forwarding reqeust to auth services
-		log.Printf("incoming authentication request : %+v \n", requestPayload.Auth)
 		app.authenticate(w, requestPayload.Auth)
 	case "log":
-		log.Printf("incoming logger request : %+v \n", requestPayload.Log)
-		app.logItem(w, requestPayload.Log)
+		// use this to logging via json
+		// app.logItem(w, requestPayload.Log)
+
+		// logging via rabbitmq
+		app.logEventViewRabbitMQ(w, requestPayload.Log)
 	case "mail":
-		log.Printf("incoming mailer request : %+v \n", requestPayload.Mail)
 		app.sendMail(w, requestPayload.Mail)
 	default:
 		app.errorJSON(w, errors.New("unkown action"))
@@ -120,7 +124,7 @@ func (app *Config) logItem(w http.ResponseWriter, payload LogPayload) {
 // authenticate forwading and recording/manipulating response from authentication-services
 func (app *Config) authenticate(w http.ResponseWriter, payload AuthPayload) {
 
-	// create json data to auth servc
+	// create json data to auth service
 	jsonData, _ := json.MarshalIndent(payload, "", "\t")
 
 	// Build a new Request
@@ -174,6 +178,7 @@ func (app *Config) authenticate(w http.ResponseWriter, payload AuthPayload) {
 
 }
 
+// sendMail Forwading to mail-service to send e-mail
 func (app *Config) sendMail(w http.ResponseWriter, msg MailPayload) {
 	jsonData, _ := json.MarshalIndent(msg, "", "\t")
 
@@ -209,4 +214,41 @@ func (app *Config) sendMail(w http.ResponseWriter, msg MailPayload) {
 		Message: "Massage send To :" + msg.To,
 	}
 	app.writeJSON(w, http.StatusAccepted, responsePayload)
+}
+
+// logEventViewRabbitMQ push logger event to rabbitMQ
+func (app *Config) logEventViewRabbitMQ(w http.ResponseWriter, l LogPayload) {
+	// try publishing to queue
+	err := app.pushToQueue(l.Name, l.Data)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+	// if no err make resp
+	// write response to front
+	responsePayload := jsonResponse{
+		Error:   false,
+		Message: "Logged via rabbitMq publish and listener queue",
+	}
+	app.writeJSON(w, http.StatusAccepted, responsePayload)
+}
+
+// pushToQueue publish given name and msg to queue
+func (app *Config) pushToQueue(name string, msg string) error {
+	// create emmiter object
+	emmiter, err := event.NewEventEmitter(app.Rabbit)
+	if err != nil {
+		return err
+	}
+	// Populate logger data to push in queue
+	payload := LogPayload{
+		Name: name,
+		Data: msg,
+	}
+	// make json format
+	jsonEvent, _ := json.MarshalIndent(&payload, "", "\t")
+	// push to queue
+	emmiter.Push(string(jsonEvent), "log.INFO")
+
+	return nil
 }
