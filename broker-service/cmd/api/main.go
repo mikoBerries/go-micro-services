@@ -17,7 +17,7 @@ func main() {
 		Addr:    fmt.Sprintf(":%s", webPort),
 		Handler: app.routes(),
 	}
-	log.Printf("starting broker services ad :%s\n", webPort)
+	log.Printf("starting broker services at :%s\n", webPort)
 	err := srv.ListenAndServe()
 	if err != nil {
 		log.Panic(err)

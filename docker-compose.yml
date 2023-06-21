@@ -71,7 +71,14 @@ services:
       # MONGO_INITDB_ROOT_USERNAME: admin
       # MONGO_INITDB_ROOT_PASSWORD: secretmongo
       # environment:
- 
+  
+  # SMTP server :1025
+  # HTTP server :8025
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   data:

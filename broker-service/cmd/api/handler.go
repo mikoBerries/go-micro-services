@@ -37,7 +37,7 @@ func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
 	app.writeJSON(w, http.StatusOK, payloadBody)
 }
 
-// HandleSubmission ahndling all routing from front end to each specified servies
+// HandleSubmission handling all routing from front end to each specified servies
 func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	// fetch payload
 	var requestPayload RequestPayload
