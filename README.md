@@ -229,7 +229,10 @@ $ vim /etc/host/
 10. (Horizontal Pod Autoscaling) In kubetnetes can do auto scaling services depending on incoming traffic.(documentation: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
 11. Hosting kubernetes in cloud service there are some diffrent configuration needed (AWS-EKS , GKE)
 12. configuring ingress TLS/SSL certificate in kubernetes (https://devopscube.com/configure-ingress-tls-kubernetes/)
+
 # ETC
 ------
 1. In Production stages we never put DB (mysql, postgre, etc) in our cluster (swarm/k8s) instead running external DB service and connected to cluster. 
 2. how to modify host file in windows (https://www.thewindowsclub.com/hosts-file-in-windows)
+3. Repository pattern in golang SQLC are using this pattern (https://threedots.tech/post/repository-pattern-in-go/)
+4. we can use mock plugin to code generate interface for database testing.
