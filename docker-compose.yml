@@ -69,23 +69,18 @@ services:
     ports:
       - "5432:5432"
     restart: always
-      # deploy:
-      #   mode: relicated
-      #   replicas: 1
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=users
     volumes:
       - data:/var/lib/postgresql/data
-    # volumes:
-    #   - ./db-data/postgres/:/var/lib/postgresql/data/
 
   mongoDB:
     image: mongo:4.2.16-bionic
     ports:
       - "27017:27017"
-    # restart: always
+    restart: always
     environment:
       MONGO_INITDB_DATABASE: logs
       MONGO_INITDB_ROOT_USERNAME: admin

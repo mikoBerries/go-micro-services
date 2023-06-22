@@ -1,0 +1,19 @@
+## separate yml file to build postgres outside of cluster
+version: '3'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=users
+    volumes:
+      - data:/var/lib/postgresql/data
+
+volumes:
+  data:
+    external: true
