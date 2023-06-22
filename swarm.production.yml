@@ -1,0 +1,137 @@
+version: 3
+
+services:
+
+  caddy:
+    image: gio/micro-caddy.prodcution:1.0.0
+    deploy:
+      mode: relicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-1
+    ports:
+      - "80:80"
+      - "443:443"
+    volume:
+      - caddy_data:/data
+      - caddy_config:/config
+
+  front-end:
+    images: gio/front-end:1.0.0
+    deploy:
+      mode: relicated
+      replicas: 1
+    environment:
+      BROKER_URL: "http://backend"
+  
+  broker-service:
+    images: gio/broker-service:1.0.0
+    deploy:
+      mode: relicated
+      replicas: 1
+    environment:
+      rabbitMQDial: "amqp://guest:guest@rabbitmq"
+
+  logger-service:
+    images: gio/logger-service:1.0.0
+    deploy:
+      mode: relicated
+      replicas: 1
+    environment:
+      - mongoUrl=mongodb://mongoDB:27017
+  
+  authentication-service:
+    images: gio/authentication-service:1.0.0
+    deploy:
+        mode: relicated
+        replicas: 1
+    ports:
+      - "8081:80"
+    environment:
+      - DSN=host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5
+
+  mailer-service:
+    images: gio/mailer-service:1.0.0
+    deploy:
+      mode: relicated
+      replicas: 1
+    environment:
+      MAIL_PORT: 1025
+      MAIL_DOMAIN: localhost
+      MAIL_HOST: mailhog
+      MAIL_USERNAME: ""
+      EMAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: none
+      FROM_NAME: "john Doe"
+      FROM_ADDRESS: "jhon.Doe@email.com"
+
+  listener-service:
+    images: gio/listener-service:1.0.0
+    deploy:
+      mode: relicated
+      replicas: 1
+    environment:
+      rabbitMQDial: "amqp://guest:guest@rabbitmq"
+
+
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    deploy:
+      mode: relicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-1
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=users
+    volumes:
+      - ./db-data/postgres/:/var/lib/postgresql/data/
+
+  mongoDB:
+    image: mongo:4.2.16-bionic
+    ports:
+      - "27017:27017"
+    deploy:
+      mode: relicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-1
+    environment:
+      MONGO_INITDB_DATABASE: logs
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - data:/mongodb/data/db
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  rabbitmq:
+    image: rabbitmq:3.10.24-alpine
+    ports:
+      - "5672:5672"
+    deploy:
+      mode: relicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == node-1
+    volumes:
+      - data:/var/lib/rabbitmq/
+
+volumes:
+  data:
+    external: true
+  caddy_data:
+    external: true
+  caddy_config:
+    external: true
