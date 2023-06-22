@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"net/rpc"
 	"os"
 	"time"
 
@@ -17,7 +19,7 @@ const (
 	webPort = "80"
 	rpcPort = "5001"
 	// mongoUrl = "mongodb://mongodatabase:27017"
-	gRpcPort = "5001"
+	gRpcPort = "50001"
 )
 
 var client *mongo.Client
@@ -50,14 +52,53 @@ func main() {
 			log.Println("exit")
 		}
 	}()
-
 	app := Config{
 		Models: data.New(client),
 	}
+	// Start listen via RPC
+	go app.rpcListen()
+	// start listen via gRPC
+	go app.gRPCListen()
+	// start listen via Http
 	app.serve()
 
 }
 
+// rpcListen to start listening RPC
+func (app *Config) rpcListen() error {
+
+	// register available RPC in this server || Using standart golang rpc package
+	err := rpc.Register(new(RPCServer))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Println(" Starting RPC server on :", rpcPort)
+
+	// Start listening TCP from port
+	listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", rpcPort))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	defer listener.Close()
+
+	// Start looping and handle incoming request
+	for {
+
+		rpcConn, err := listener.Accept()
+		if err != nil {
+			log.Println("error happend went aceppting incoming RPC:", err)
+			continue
+		}
+
+		go rpc.ServeConn(rpcConn)
+	}
+
+}
+
+// serve serve and listen use http
 func (app *Config) serve() {
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", webPort),
