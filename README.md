@@ -164,3 +164,72 @@ $ docker node ps
         constraints:
             - node.hostname == node-1
 ```
+
+## Kubernetes open source container orchestration (k8s)
+-------------------------------------------------
+
+1. instaling kubernetes tools 
+    - minikube: https://minikube.sigs.k8s.io/docs/start/
+    - kubectl: https://kubernetes.io/docs/tasks/tools/
+2. In Docker || in Kubernetes:
+    * Images    ||  Service
+        - docker images ||  kubectl get svc
+        - docker rmi    ||  kubectl delete svc
+    * Containers    ||  Pods
+        - docker ps -a  ||  kubectl get pods -a
+3. starting minikube
+```console
+$ minikube start --nodes=2
+// check status
+$ minikube status
+```
+4. minikube dashboard
+```console
+$ minikube dashboard
+```
+```console
+$ kubectl get pods -a
+``` 
+5. Create .yml for kubernetes and apply to pods
+    - documentation : https://kubernetes.io/docs/concepts/overview/working-with-objects/
+    - resource limit : https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+```console
+// apply all file in folder k8s
+$ kubectl apply -f k8s
+
+// check our pods
+$ kubectl get pods
+$ kubectl get svc
+$ kubectl get deplyments
+```
+6. Getting pods log
+```console
+// get all pods
+$ kubectl get pods
+$ kubectl logs some-pods-name
+```
+7. exposing external port to internet using LoadBalancer
+```console
+// make some-service to become loadBalancer
+$ kubectl expose deployment some-service --type=LoadBalancer --port=8080 --target-port=8080
+// exposing load balancer port outside
+$ minikube tunnel
+```
+8. nginx ingress handle request and forwarding to backend just like caddy in docker swarm.
+* Create ingrees.yml (documentation : https://kubernetes.io/docs/concepts/services-networking/ingress/)
+```console
+$ minikube enable ingress
+```
+* Adding host file to routing declared path in ingress (front-end.info & broker-service.info) routed to (127.0.0.1). (windows see ETC section no. 2)
+```console
+$ vim /etc/host/
+```
+* Now we can open in browser http://front-end.info
+9. Manual scaling can be doing in kubernetes dashboard or change .yml manualy (spec.replicas value)
+10. (Horizontal Pod Autoscaling) In kubetnetes can do auto scaling services depending on incoming traffic.(documentation: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+11. Hosting kubernetes in cloud service there are some diffrent configuration needed (AWS-EKS , GKE)
+12. configuring ingress TLS/SSL certificate in kubernetes (https://devopscube.com/configure-ingress-tls-kubernetes/)
+# ETC
+------
+1. In Production stages we never put DB (mysql, postgre, etc) in our cluster (swarm/k8s) instead running external DB service and connected to cluster. 
+2. how to modify host file in windows (https://www.thewindowsclub.com/hosts-file-in-windows)

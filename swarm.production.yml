@@ -57,9 +57,9 @@ services:
       mode: relicated
       replicas: 1
     environment:
-      MAIL_PORT: 1025
       MAIL_DOMAIN: localhost
       MAIL_HOST: mailhog
+      MAIL_PORT: 1025
       MAIL_USERNAME: ""
       EMAIL_PASSWORD: ""
       MAIL_ENCRYPTION: none
