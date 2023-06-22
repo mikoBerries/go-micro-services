@@ -2,13 +2,18 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
 	"net/rpc"
+	"time"
 
 	"github.com/MikoBerries/go-micro-services/broker-service/event"
+	logs "github.com/MikoBerries/go-micro-services/broker-service/pb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // RequestPayload universa request embeded with Specific payload nedeed for each action
@@ -49,7 +54,8 @@ func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
 	app.writeJSON(w, http.StatusOK, payloadBody)
 }
 
-// HandleSubmission handling all routing from front end to each specified servies
+// HandleSubmission is the main point of entry into the broker. It accepts a JSON
+// payload and performs an action based on the value of "action" in that JSON.
 func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 	// fetch payload
 	var requestPayload RequestPayload
@@ -70,10 +76,10 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		// app.logItem(w, requestPayload.Log)
 
 		// logging via rabbitmq
-		// app.logEventViewRabbitMQ(w, requestPayload.Log)
+		app.logEventViewRabbitMQ(w, requestPayload.Log)
 
 		// logging via RPC
-		app.logItemViaRPC(w, requestPayload.Log)
+		// app.logItemViaRPC(w, requestPayload.Log)
 	case "mail":
 		app.sendMail(w, requestPayload.Mail)
 	default:
@@ -294,4 +300,43 @@ func (app *Config) logItemViaRPC(w http.ResponseWriter, l LogPayload) {
 		Message: result,
 	}
 	app.writeJSON(w, http.StatusAccepted, responsePayload)
+}
+
+// LogViaGRPC habdler function for loggin gRPC
+func (app *Config) LogViaGRPC(w http.ResponseWriter, r *http.Request) {
+	var requestPayload RequestPayload
+
+	err := app.readJSON(w, r, &requestPayload)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	conn, err := grpc.Dial("logger-service:50001", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+	defer conn.Close()
+
+	c := logs.NewLogServiceClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	_, err = c.WriteLog(ctx, &logs.LogRequest{
+		LogEntry: &logs.Log{
+			Name: requestPayload.Log.Name,
+			Data: requestPayload.Log.Data,
+		},
+	})
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	var payload jsonResponse
+	payload.Error = false
+	payload.Message = "logged"
+
+	app.writeJSON(w, http.StatusAccepted, payload)
 }

@@ -34,3 +34,25 @@ We'll also learn how to deploy our distributed application to a Docker Swarm and
 
 
 * https://www.cyberciti.biz/faq/alpine-linux-install-bash-using-apk-command/
+
+## Docker Swarm
+----------------
+1. To use Docker swarm we must pushing our images to dockerhub (like github but for docker images)
+2. After that make swarm.yml just like docker-compose.yml but images are refering to dockerhub instead of local images
+3. Then Do in console to initial swarm will create 1 NODE as Manager
+````console
+$ docker swarm init
+````
+4. We can add more Worker / Manager to node (follow this command instruction to get token)
+````console
+$ docker swarm join-token worker
+$ docker swarm join-token manager
+````
+5. To deploy Docker Swarm we must use Docker-Stack in same level of swarm.yml file (Docker tollBox are not supported to making swarm)
+````console
+$ docker stack deploy -c swarm.yml someSwarmName
+````
+6. To check docker service that running
+````console
+$ docker service ls
+````
