@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"text/template"
 )
 
 var myTemplate *template.Template
+
+// // go:embed templates
+// var templateFS embed.FS
 
 func init() {
 	//parsing all template
@@ -20,8 +24,8 @@ func main() {
 		renders(w, "test.page.gohtml")
 	})
 
-	fmt.Println("Starting front end service on port :80")
-	err := http.ListenAndServe(":80", nil)
+	fmt.Println("Starting front end service on port :8081")
+	err := http.ListenAndServe(":8081", nil)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -49,7 +53,12 @@ func renders(w http.ResponseWriter, t string) {
 	// 	return
 	// }
 
-	if err := myTemplate.ExecuteTemplate(w, t, nil); err != nil {
+	var data struct {
+		BrokerURL string
+	}
+	data.BrokerURL = os.Getenv("BROKER_URL")
+
+	if err := myTemplate.ExecuteTemplate(w, t, data); err != nil {
 		log.Fatal(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

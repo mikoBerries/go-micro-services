@@ -43,10 +43,14 @@
     let output = document.getElementById("output");
     let sent = document.getElementById("payload");
     let recevied = document.getElementById("received");
-    
+   
     
     brokerBtn.addEventListener("click", function() {
         // request builder to docker machine
+
+        // use this for global variable
+        // let request = new Request({{print .BrokerURL }}),{
+        // use this IP for localhost
         let request = new Request('http://192.168.99.100:8080', {
             headers: new Headers({
                 'Content-Type': 'text/json' 
@@ -88,6 +92,9 @@
             headers: headers,
         }
 
+        // use this for global variable
+        // let request = new Request({{print .BrokerURL "/handle"}}),{
+        // use this IP for localhost
         fetch("http://192.168.99.100:8080/handle", body)
         .then((response) => response.json())
         .then((data) => {
@@ -122,6 +129,10 @@
             headers: headers,
         }
 
+
+        // use this for global variable
+        // let request = new Request({{print .BrokerURL "/handle"}}),{
+        // use this IP for localhost
         fetch("http://192.168.99.100:8080/handle", body)
         .then((response) => response.json())
         .then((data) => {
@@ -159,6 +170,9 @@
             headers: headers,
         }
 
+        // use this for global variable
+        // let request = new Request({{print .BrokerURL "/handle"}}),{
+        // use this IP for localhost
         fetch("http://192.168.99.100:8080/handle", body)
         .then((response) => response.json())
         .then((data) => {

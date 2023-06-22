@@ -91,3 +91,76 @@ $ docker stack rm swram_name
 // using --force is we leave Manager swarm not Worker
 $ docker swarm leave --force
 ````
+
+## Caddy server
+-------
+1. Caddy 2 is a powerful, enterprise-ready, open source web server with automatic HTTPS written in Go-lang (https://hub.docker.com/_/caddy)
+2. oficial website (https://caddyserver.com/business)
+3. how to modify host file in windows (https://www.thewindowsclub.com/hosts-file-in-windows)
+4. Cloud service Cost efective for experimental:
+    - https://www.linode.com/
+    - https://www.digitalocean.com/
+    - https://www.vultr.com/
+5. connecting to cloud server we make and setting some for usage
+    - Adding user and giving sudo prefilege beside root user:
+    ```console
+    // adding user in ubuntu
+    $ add user some-user-name
+    // giving user previlege
+    $ usermod -aG sudo some-user-name
+    ```
+    - Setting firewall in ubuntu: 
+    ```console
+    $ ufw allow ssh
+    $ ufw allow http
+    $ ufw allow https
+    // port for docker
+    $ ufw allow 2377/tcp
+    $ ufw allow 7946/tcp
+    $ ufw allow 7946/udp
+    $ ufw allow 4789/udp
+    // mailhog port
+    $ ufw allow 8025/udp
+    $ ufw enable
+    $ ufw status
+    ```
+6. After all set up ubuntu are ready to build docker machine (https://docs.docker.com/engine/install/ubuntu/)
+    - Follow instruction in secdtion Install using the apt repository (there are few method to instal docker)
+    - After finish we can check our docker are instaled
+    ```console
+    $ where docker
+    ```
+7. Change ubuntu host name to appropied host name
+```console
+$ sudo hostnamectl set-hostname node-1
+```
+8. update host and write our node ip in the host-list
+```console
+$ sudo vi /etc/hosts
+```
+9. Setting DNS using godaddy
+10. Setting up docker swarm inside ubuntu server with few node server
+```console
+// this will make a Swarm manager in node_ip server
+$ sudo docker swarm init --advertise-addr node_ip
+
+// change to other node of server and execute docker swarm join --token to make wokrker listed to node Manager server
+```
+11. udpating caddy file and caddy docker file so caddy file with fetch porxy named our domain
+12. dont forget to create folder inside the ubuntu server 
+13. starting docker swarm like in docker swarm section no 5 ~
+14. adding user to docker gruop
+```console
+$ sudo usermod -aG docker some-user-name
+```
+15. Checking all container in node using 
+```console
+$ docker node ps
+```
+16. Docker volume need placement to refering where is volume located?
+```console
+    ## this is example when volume path exist in node-1
+    placement:
+        constraints:
+            - node.hostname == node-1
+```
