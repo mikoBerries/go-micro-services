@@ -19,7 +19,7 @@ const (
 	webPort = "80"
 	rpcPort = "5001"
 	// mongoUrl = "mongodb://mongodatabase:27017"
-	gRpcPort = "5001"
+	gRpcPort = "50001"
 )
 
 var client *mongo.Client
@@ -55,25 +55,31 @@ func main() {
 	app := Config{
 		Models: data.New(client),
 	}
-	// RPPC serve
-	rpcServer := RPCServer{
-		Models: data.New(client),
-	}
-	// register own rpc server in standart golang rpc package
-	rpc.Register(rpcServer)
+	// Start listen via RPC
 	go app.rpcListen()
-
+	// start listen via gRPC
+	go app.gRPCListen()
+	// start listen via Http
 	app.serve()
 
 }
 
-// rpcListen to start listening rpc
+// rpcListen to start listening RPC
 func (app *Config) rpcListen() error {
-	log.Println("Starting RPC server on :", rpcPort)
+
+	// register available RPC in this server || Using standart golang rpc package
+	err := rpc.Register(new(RPCServer))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Println(" Starting RPC server on :", rpcPort)
 
 	// Start listening TCP from port
 	listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", rpcPort))
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	defer listener.Close()
@@ -83,7 +89,7 @@ func (app *Config) rpcListen() error {
 
 		rpcConn, err := listener.Accept()
 		if err != nil {
-			log.Println("error happend went acppting incoming RPC:", err)
+			log.Println("error happend went aceppting incoming RPC:", err)
 			continue
 		}
 

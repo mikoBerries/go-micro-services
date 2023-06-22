@@ -265,6 +265,7 @@ type RPCPayload struct {
 // logItemViaRPC calling logger-service using RPC instead JSON
 func (app *Config) logItemViaRPC(w http.ResponseWriter, l LogPayload) {
 	// dialing our service insede container with port
+	// Dial tcp => logger-service:5001 where rpc server are listening
 	client, err := rpc.Dial("tcp", "logger-service:5001")
 	if err != nil {
 		app.errorJSON(w, err)

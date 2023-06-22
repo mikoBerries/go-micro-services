@@ -10,7 +10,7 @@ services:
       - "8080:80"
     environment:
       rabbitMQDial: "amqp://guest:guest@rabbitmq"
-    # restart: always
+    restart: always
     # deploy:
     #   mode: relicated
     #   replicas: 1
