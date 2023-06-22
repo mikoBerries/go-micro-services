@@ -38,11 +38,19 @@ We'll also learn how to deploy our distributed application to a Docker Swarm and
 ## Docker Swarm
 ----------------
 1. To use Docker swarm we must pushing our images to dockerhub (like github but for docker images)
+```console
+// Login to dockerhub
+$ docker login -u your_user_name - The -u option allows us to pass our user name.
+// Build images with to push to docker hub
+$ docker build -f some-service.dockerfile -t some_service_name:tag .
+// Push images to loged user in dockerhub
+$ docker push some_service_name:tag
+```
 2. After that make swarm.yml just like docker-compose.yml but images are refering to dockerhub instead of local images
 3. Then Do in console to initial swarm will create 1 NODE as Manager
-````console
+```console
 $ docker swarm init
-````
+```
 4. We can add more Worker / Manager to node (follow this command instruction to get token)
 ````console
 $ docker swarm join-token worker
@@ -50,9 +58,36 @@ $ docker swarm join-token manager
 ````
 5. To deploy Docker Swarm we must use Docker-Stack in same level of swarm.yml file (Docker tollBox are not supported to making swarm)
 ````console
-$ docker stack deploy -c swarm.yml someSwarmName
+// swarm_name as name of node/swarm we created
+$ docker stack deploy -c swarm.yml swarm_name
 ````
 6. To check docker service that running
 ````console
 $ docker service ls
+````
+7. We can scaling service by using (Images mode must Be Replicated instead global)
+````console
+// Scaling up some_service_name to 3 
+$ docker service scale some_service_name = 3
+// Scaling Down some_service_name to 3 
+$ docker service scale some_service_name = 2
+````
+8. Updating 1 some-service from new images in dockerhub that created at project code
+````console
+// Build images with to push to docker hub
+$ docker build -f some-service.dockerfile -t some_service_name:tag .
+// Push images to loged user in dockerhub
+$ docker push some_service_name:tag
+// updating service with new images (some_service_name) from dockerhub
+// We can update it to new tags or rollback using tag images we need
+$ docker service update --image some_service_name:tag swarm_name_some_service_name
+````
+9. Stopping swarm Service  & removing swarm
+````console
+// Stopping swarm service 
+$ docker service scale swarm_name=0
+// Removing swarm
+$ docker stack rm swram_name
+// using --force is we leave Manager swarm not Worker
+$ docker swarm leave --force
 ````
