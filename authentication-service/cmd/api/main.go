@@ -19,8 +19,8 @@ import (
 const webPort = "80"
 
 type Config struct {
-	DB     *sql.DB
-	Models data.Models
+	Repo   data.Repository //populate db and models
+	Client *http.Client    // for mocking roundTrip
 }
 
 func main() {
@@ -32,8 +32,7 @@ func main() {
 	}
 
 	app := Config{
-		DB:     conn,
-		Models: data.New(conn),
+		Client: &http.Client{},
 	}
 	// make serv
 	srv := &http.Server{
