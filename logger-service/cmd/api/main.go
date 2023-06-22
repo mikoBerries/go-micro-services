@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"net/rpc"
 	"os"
 	"time"
 
@@ -50,14 +52,47 @@ func main() {
 			log.Println("exit")
 		}
 	}()
-
 	app := Config{
 		Models: data.New(client),
 	}
+	// RPPC serve
+	rpcServer := RPCServer{
+		Models: data.New(client),
+	}
+	// register own rpc server in standart golang rpc package
+	rpc.Register(rpcServer)
+	go app.rpcListen()
+
 	app.serve()
 
 }
 
+// rpcListen to start listening rpc
+func (app *Config) rpcListen() error {
+	log.Println("Starting RPC server on :", rpcPort)
+
+	// Start listening TCP from port
+	listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", rpcPort))
+	if err != nil {
+		return err
+	}
+	defer listener.Close()
+
+	// Start looping and handle incoming request
+	for {
+
+		rpcConn, err := listener.Accept()
+		if err != nil {
+			log.Println("error happend went acppting incoming RPC:", err)
+			continue
+		}
+
+		go rpc.ServeConn(rpcConn)
+	}
+
+}
+
+// serve serve and listen use http
 func (app *Config) serve() {
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", webPort),

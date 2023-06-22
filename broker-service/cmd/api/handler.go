@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/rpc"
 
 	"github.com/MikoBerries/go-micro-services/broker-service/event"
 )
@@ -69,7 +70,10 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 		// app.logItem(w, requestPayload.Log)
 
 		// logging via rabbitmq
-		app.logEventViewRabbitMQ(w, requestPayload.Log)
+		// app.logEventViewRabbitMQ(w, requestPayload.Log)
+
+		// logging via RPC
+		app.logItemViaRPC(w, requestPayload.Log)
 	case "mail":
 		app.sendMail(w, requestPayload.Mail)
 	default:
@@ -251,4 +255,42 @@ func (app *Config) pushToQueue(name string, msg string) error {
 	emmiter.Push(string(jsonEvent), "log.INFO")
 
 	return nil
+}
+
+type RPCPayload struct {
+	Name string
+	Data string
+}
+
+// logItemViaRPC calling logger-service using RPC instead JSON
+func (app *Config) logItemViaRPC(w http.ResponseWriter, l LogPayload) {
+	// dialing our service insede container with port
+	client, err := rpc.Dial("tcp", "logger-service:5001")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	// populate payload to satified logger rpc payload
+	rpcPayload := RPCPayload{
+		Name: l.Name,
+		Data: l.Data,
+	}
+
+	// result serve as response from RPCServer from logger-service || Response can be ANY type even struct
+	var result string
+	// Starting call rpc server with function declared in server (function in)
+	err = client.Call("RPCServer.LogInfo", rpcPayload, &result)
+
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	// start writing response to front-end
+	responsePayload := jsonResponse{
+		Error:   false,
+		Message: result,
+	}
+	app.writeJSON(w, http.StatusAccepted, responsePayload)
 }
